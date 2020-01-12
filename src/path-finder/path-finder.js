@@ -27,7 +27,7 @@ export class Pathfinder{
         this.randomEnd();
         this.findNeighbors();
         this.fieldFlat=this.field.flat(1);
-        this.drawFunction([...this.fieldFlat]);
+        this.drawField();
     }
 
     run(){
@@ -36,20 +36,35 @@ export class Pathfinder{
                 this.findLowestFScore();
                 this.updateSets();
                 this.checkNeigbors();
-                //this.drawFunction(this.field.map(row=>[...row]));
-                this.drawFunction([...this.fieldFlat]);
+                this.drawField();
             }else{ 
                 clearInterval(this.loop);
                 console.log("could not be solved! :(")
             }
-        } ,200)
+        } ,2)
+    }
+
+    drawField(){
+        //console.log("draw")
+        // looks like drawing with this many divs takes ages :( maybe move to webgl canvas 
+        this.drawFunction([...this.fieldFlat]);
+    }
+
+    drawPath(){
+        this.loop=setInterval(()=>{
+            if(!this.current.cameFrom) return clearTimeout(this.loop);
+            this.path.unshift(this.current);
+            this.current=this.current.cameFrom;
+            this.current.draw=4;
+            this.drawField();
+        }, 100);
     }
 
 
 
     findLowestFScore(){
         this.min=this.openSet.values().next().value;
-        console.log(this.openSet.size)
+        //console.log(this.openSet.size)
         for(let node of this.openSet){
             if(node.f<this.min.f) this.min=node;
         }
@@ -61,11 +76,11 @@ export class Pathfinder{
             // stop looping when done
             clearTimeout(this.loop); 
             this.current.draw=3
-            return console.log("solved! :3")
+            console.log("solved! :3")
+            return this.drawPath();
         };
         this.openSet.delete(this.current);
         this.closedSet.add(this.current);
-        //console.log(this.openSet)
 
         this.current.draw=2;
     }
@@ -95,6 +110,9 @@ export class Pathfinder{
                     this.openSet.add(this.current.neighbors[i]);
                     this.current.neighbors[i].draw=1;
                 }
+
+                this.current.neighbors[i].cameFrom=this.current;
+
 
                 this.current.neighbors[i].h=this.setHeuristic(this.current.neighbors[i]);
                 this.current.neighbors[i].f=this.current.neighbors[i].h+this.current.neighbors[i].g;
