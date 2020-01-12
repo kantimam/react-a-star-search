@@ -1,8 +1,11 @@
 import {randomInt} from '../util/util'
-import { getQueriesForElement } from '@testing-library/react';
 
 export class Pathfinder{
-    fieldFlat;
+    field; // actual 2d grid
+    fieldWidth;
+    fieldHeight;
+    drawFunction;  // function to draw the field setState in this case
+    fieldFlat; // 1dim version of the grid for easier looping and drawing
     openSet=new Set();
     closedSet=new Set();
     
@@ -14,20 +17,27 @@ export class Pathfinder{
 
     path=[]
 
-    constructor(field, drawFunction){
+    
+    // move here from constructor
+    init(field, drawFunction){
         this.field=field;
         this.drawFunction=drawFunction;
         this.fieldWidth=this.field[0].length;
         this.fieldHeight=this.field.length;
-    }
-
-    setup(){
         this.fillField();
         this.randomStart();
         this.randomEnd();
-        this.findNeighbors();
+        //this.findNeighbors();
+
         this.fieldFlat=this.field.flat(1);
         this.drawField();
+    }
+
+    find(){
+        if(!this.field.length || !this.drawFunction) return console.log("seems like init failed")
+        this.drawField();
+        this.findValidPaths();
+        this.run();
     }
 
     run(){
@@ -41,7 +51,7 @@ export class Pathfinder{
                 clearInterval(this.loop);
                 console.log("could not be solved! :(")
             }
-        } ,2)
+        } ,30)
     }
 
     drawField(){
@@ -73,6 +83,7 @@ export class Pathfinder{
     
     updateSets(){
         if(this.current===this.end){
+            console.log(this.current, this.end, this.field)
             // stop looping when done
             clearTimeout(this.loop); 
             this.current.draw=3
@@ -92,6 +103,17 @@ export class Pathfinder{
                 x<this.fieldWidth-1 && this.field[y][x].neighbors.push(this.field[y][x+1]);
                 y<this.fieldHeight-1 && this.field[y][x].neighbors.push(this.field[y+1][x]);
                 x>0 && this.field[y][x].neighbors.push(this.field[y][x-1]);
+            }
+        }
+    }
+
+    findValidPaths(){
+        for(let y=0; y<this.fieldHeight; y++){
+            for(let x=0; x<this.fieldWidth; x++){
+                if(y>0 && !this.field[y-1][x].blocked) this.field[y][x].neighbors.push(this.field[y-1][x]);
+                if(x<this.fieldWidth-1 && !this.field[y][x+1].blocked) this.field[y][x].neighbors.push(this.field[y][x+1]);
+                if(y<this.fieldHeight-1 && !this.field[y+1][x].blocked) this.field[y][x].neighbors.push(this.field[y+1][x]);
+                if(x>0 && !this.field[y][x-1].blocked) this.field[y][x].neighbors.push(this.field[y][x-1]);
             }
         }
     }
@@ -126,11 +148,13 @@ export class Pathfinder{
     randomStart(){
         //this.start=this.field[randomInt(0, this.fieldHeight-1)][randomInt(0, this.fieldWidth-1)];
         this.start=this.field[0][0];
+        this.start.draw=1;
         this.openSet.add(this.start);
     }
 
     randomEnd(){
         this.end=this.field[randomInt(0, this.fieldHeight-1)][randomInt(0, this.fieldWidth-1)];
+        this.end.draw=4;
     }
 
     fillField(size){
@@ -143,7 +167,6 @@ export class Pathfinder{
 }
 
 class Node{
-     /* top, right, bottom, left  for now*/
     neighbors=[];
     cameFrom;
     f=0;
@@ -151,6 +174,7 @@ class Node{
     h=0;
 
     draw=0;
+    blocked=false;
     constructor(x, y, size){
         this.x=x;
         this.y=y;
