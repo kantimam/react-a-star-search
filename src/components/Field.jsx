@@ -9,7 +9,26 @@ const Field = () => {
     const fieldRef=useRef(null);
     const [width, setWidth]=useState(0);
     const [height, setHeight]=useState(0);
-    const [field, setField]=useState([])
+    const [field, setField]=useState([]);
+    
+    const [uiMode, setUiMode]=useState("set start");
+
+    const nodeOnClick=(node)=>{
+        if(uiMode==="set start"){
+            finder.setStartNode(node);
+            return setUiMode("set end");
+        }
+        if(uiMode==="set end"){
+            finder.setEndNode(node);
+            return setUiMode("set blocked");
+        }
+        if(uiMode==="set blocked"){
+            if(node===finder.start || node===finder.end) return
+            node.draw=5;
+            node.blocked=true;
+        }
+        
+    }
 
     useLayoutEffect(() => {
         const field=create2dArray(22, 22);
@@ -33,7 +52,13 @@ const Field = () => {
 
     return (
         <>
-            {finder && <button onClick={()=>finder.find()}>START</button>}
+            {finder && 
+                <>  <p>{uiMode}</p>
+                    <button onClick={()=>finder.findRandomPath()}>random path</button>
+                    <button onClick={()=>finder.find()}>START</button>
+                    <button onClick={()=>finder.find()}>START</button>
+                </>
+            }
             <div ref={fieldRef}  className="field">
             {field.map((item)=>
                 <Node
@@ -44,6 +69,7 @@ const Field = () => {
                     y={item.y}
                     color={colors[item.draw]} */
                     item={item}
+                    nodeOnClick={nodeOnClick}
                 />
             )}
             </div>

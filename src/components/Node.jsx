@@ -3,11 +3,10 @@ import React, {memo, useState} from 'react'
 const colors=["white", "red", "green", "blue", "yellow", "black"]
 
 
-const Node = ({width, height, /* x, y, color, onClick */ item}) => {
+const Node = ({width, height, item, nodeOnClick}) => {
     const [color, setColor]=useState(colors[item.draw])
     const blockPath=()=>{
-        item.draw=5;
-        item.blocked=true;
+        nodeOnClick(item);
         setColor(colors[item.draw]);
     }
     return (

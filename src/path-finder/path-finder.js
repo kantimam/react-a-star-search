@@ -25,22 +25,66 @@ export class Pathfinder{
         this.fieldWidth=this.field[0].length;
         this.fieldHeight=this.field.length;
         this.fillField();
-        this.randomStart();
-        this.randomEnd();
-        //this.findNeighbors();
 
         this.fieldFlat=this.field.flat(1);
         this.drawField();
     }
 
+    reset(){
+        this.openSet.clear();
+        this.closedSet.clear();
+        this.fillField();
+
+    }
+
+
+    setStart(x,y){
+        this.start=this.field[y][x];
+        this.start.draw=1;
+        this.openSet.add(this.start);
+
+    }
+
+    setEnd(x,y){
+        this.end=this.field[y][x];
+        this.end.draw=4;
+    }
+
+    setStartNode(node){
+        this.start=node;
+        this.start.draw=1;
+        this.openSet.add(this.start);
+
+    }
+
+    setEndNode(node){
+        this.end=node;
+        this.end.draw=4;
+    }
+
+
+    findRandomPath(){
+        this.randomStart();
+        this.randomEnd();
+        this.find();
+    }
+
+    findFromTo(startNode, endNode){
+        this.start=startNode;
+        this.end=endNode;
+        this.find();
+    }
+
     find(){
-        if(!this.field.length || !this.drawFunction) return console.log("seems like init failed")
+        if(!this.field.length || !this.drawFunction) return console.log("seems like init failed");
         this.drawField();
         this.findValidPaths();
         this.run();
     }
 
     run(){
+        if(!this.start) return console.log("please set a start node. setStart(x,y)");
+        if(!this.end) return console.log("please set a end node. setEnd(x,y)");
         this.loop=setInterval(()=>{
             if(this.openSet.size){
                 this.findLowestFScore();
@@ -146,15 +190,11 @@ export class Pathfinder{
     setHeuristic=(node)=> Math.hypot(this.end.x-node.x, this.end.y-node.y);
 
     randomStart(){
-        //this.start=this.field[randomInt(0, this.fieldHeight-1)][randomInt(0, this.fieldWidth-1)];
-        this.start=this.field[0][0];
-        this.start.draw=1;
-        this.openSet.add(this.start);
+        this.setStart(randomInt(0, this.fieldWidth-1), randomInt(0, this.fieldHeight-1));
     }
 
     randomEnd(){
-        this.end=this.field[randomInt(0, this.fieldHeight-1)][randomInt(0, this.fieldWidth-1)];
-        this.end.draw=4;
+        this.setEnd(randomInt(0, this.fieldWidth-1), randomInt(0, this.fieldHeight-1));
     }
 
     fillField(size){
