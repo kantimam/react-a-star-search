@@ -55,8 +55,8 @@ const Field = () => {
             {finder && 
                 <>  <p>{uiMode}</p>
                     <button onClick={()=>finder.findRandomPath()}>random path</button>
-                    <button onClick={()=>finder.find()}>START</button>
-                    <button onClick={()=>finder.find()}>START</button>
+                    <button onClick={()=>finder.run()}>START</button>
+                    <button onClick={()=>finder.runStep()}>STEP</button>
                 </>
             }
             <div ref={fieldRef}  className="field">

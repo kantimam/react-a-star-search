@@ -13,7 +13,10 @@ export class Pathfinder{
     end;
     current;
 
-    loop;
+    loop=null;
+    steps=0;
+    finished=false;
+    running=false;
 
     path=[]
 
@@ -24,18 +27,23 @@ export class Pathfinder{
         this.drawFunction=drawFunction;
         this.fieldWidth=this.field[0].length;
         this.fieldHeight=this.field.length;
-        this.fillField();
+        this.reset();
 
+    }
+
+    reset(){
+        this.finished=false;
+        this.running=false;
+        this.steps=0;
+        if(this.loop) clearTimeout(this.loop);
+        this.openSet.clear();
+        this.closedSet.clear();
+        this.fillField();
         this.fieldFlat=this.field.flat(1);
         this.drawField();
     }
 
-    reset(){
-        this.openSet.clear();
-        this.closedSet.clear();
-        this.fillField();
-
-    }
+   
 
 
     setStart(x,y){
@@ -66,36 +74,64 @@ export class Pathfinder{
     findRandomPath(){
         this.randomStart();
         this.randomEnd();
-        this.find();
+        this.run();
     }
 
     findFromTo(startNode, endNode){
         this.start=startNode;
         this.end=endNode;
-        this.find();
-    }
-
-    find(){
-        if(!this.field.length || !this.drawFunction) return console.log("seems like init failed");
-        this.drawField();
-        this.findValidPaths();
         this.run();
     }
 
+
     run(){
+        /* dont allow to restart while still running */
+        if(this.finished || this.running) return console.log("reset before starting a new finder");
+
+        if(!this.field.length || !this.drawFunction) return console.log("seems like init failed");
         if(!this.start) return console.log("please set a start node. setStart(x,y)");
         if(!this.end) return console.log("please set a end node. setEnd(x,y)");
+        
+        this.drawField();
+        this.findValidPaths();
+
+        this.running=true;
+
         this.loop=setInterval(()=>{
-            if(this.openSet.size){
-                this.findLowestFScore();
-                this.updateSets();
-                this.checkNeigbors();
-                this.drawField();
-            }else{ 
-                clearInterval(this.loop);
-                console.log("could not be solved! :(")
-            }
-        } ,30)
+            this.step();
+        }, 30)
+        
+    }
+
+    runStep(){
+        if(this.finished || this.running) return console.log("reset before starting a new finder");
+
+        // if its the first step prepare nodes
+        if(!this.steps){
+            if(!this.field.length || !this.drawFunction) return console.log("seems like init failed");
+            if(!this.start) return console.log("please set a start node. setStart(x,y)");
+            if(!this.end) return console.log("please set a end node. setEnd(x,y)");
+            
+            this.drawField();
+            this.findValidPaths();
+        }
+        this.step();
+        
+    }
+
+    step(){
+        if(this.openSet.size){
+            this.findLowestFScore();
+            this.updateSets();
+            this.checkNeigbors();
+            this.drawField();
+            this.steps++;
+        }else{ 
+            clearInterval(this.loop);
+            this.finished=true;
+            this.running=false;
+            console.log("could not be solved! :(")
+        }
     }
 
     drawField(){
@@ -106,7 +142,10 @@ export class Pathfinder{
 
     drawPath(){
         this.loop=setInterval(()=>{
-            if(!this.current.cameFrom) return clearTimeout(this.loop);
+            if(!this.current.cameFrom){
+                this.running=false;
+                return clearTimeout(this.loop);
+            } 
             this.path.unshift(this.current);
             this.current=this.current.cameFrom;
             this.current.draw=4;
@@ -132,6 +171,7 @@ export class Pathfinder{
             clearTimeout(this.loop); 
             this.current.draw=3
             console.log("solved! :3")
+            this.finished=true;
             return this.drawPath();
         };
         this.openSet.delete(this.current);

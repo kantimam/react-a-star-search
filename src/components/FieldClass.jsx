@@ -10,11 +10,13 @@ export default class FieldClass extends Component {
         
         this.fieldRef=React.createRef();
 
-        this.field=create2dArray(22, 22);
+        this.field=create2dArray(20, 20);
         this.finder=new Pathfinder();
 
         this.callAfterCss=this.callAfterCss.bind(this);
         this.nodeOnClick=this.nodeOnClick.bind(this);
+        this.createWall=this.createWall.bind(this);
+        this.reset=this.reset.bind(this);
         this.waitForCss=null;
 
         this.state = {
@@ -23,6 +25,12 @@ export default class FieldClass extends Component {
              field: [],
              uiMode: "pending"
         }
+    }
+
+    reset(){
+        this.setState({uiMode: "set start"})
+        this.finder.reset();
+        this.finder.drawField();
     }
 
     componentDidMount(){
@@ -48,6 +56,10 @@ export default class FieldClass extends Component {
     }
 
     nodeOnClick(node){
+        /* set start and end node */
+        if(this.finder && this.finder.finished) return console.log("already finished. reset and start again")
+        if(this.finder && this.finder.running) return console.log("currently running. reset and start again")
+
         if(this.state.uiMode==="set start"){
             this.finder.setStartNode(node);
             return this.setState({uiMode: "set end"});
@@ -56,6 +68,14 @@ export default class FieldClass extends Component {
             this.finder.setEndNode(node);
             return this.setState({uiMode: "set blocked"})
         }
+        
+    }
+
+    createWall(node){
+        /* create walls */
+        if(this.finder && this.finder.finished) return console.log("already finished. reset and start again")
+        if(this.finder && this.finder.running) return console.log("currently running. reset and start again")
+
         if(this.state.uiMode==="set blocked"){
             if(node===this.finder.start || node===this.finder.end) return
             node.draw=5;
@@ -68,10 +88,12 @@ export default class FieldClass extends Component {
         return (
             <>
             {this.finder && 
-                <>  <p>{this.state.uiMode}</p>
+                <>  
+                    <h1>{this.state.uiMode}</h1>
                     <button onClick={()=>this.finder.findRandomPath()}>random path</button>
-                    <button onClick={()=>this.finder.find()}>START</button>
-                    <button onClick={()=>this.finder.find()}>START</button>
+                    <button onClick={()=>this.finder.runStep()}>STEP</button>
+                    <button onClick={()=>this.finder.run()}>START</button>
+                    <button onClick={this.reset}>RESET</button>
                 </>
             }
             <div ref={this.fieldRef}  className="field">
@@ -85,6 +107,7 @@ export default class FieldClass extends Component {
                     color={colors[item.draw]} */
                     item={item}
                     nodeOnClick={this.nodeOnClick}
+                    createWall={this.createWall}
                 />
             )}
             </div>
