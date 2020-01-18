@@ -3,7 +3,7 @@ import {create2dArray} from '../util/util';
 import {Pathfinder} from '../path-finder/path-finder.js';
 import Node from './Node';
 
-const finder=new Pathfinder();;
+const finder=new Pathfinder();
 
 const Field = () => {
     const fieldRef=useRef(null);

@@ -1,7 +1,6 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import Field from './components/Field';
+import Field from './components/FieldClass';
 
 function App() {
   
