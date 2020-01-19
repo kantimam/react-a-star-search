@@ -1,6 +1,9 @@
 import React from 'react';
 import './App.css';
-import Field from './components/aStar/FieldClass';
+import Field from './components/FieldClass';
+//import Field from './components/aStar/FieldClass';
+
+
 
 function App() {
   
