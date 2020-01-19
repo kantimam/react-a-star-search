@@ -35,6 +35,7 @@ export class Pathfinder{
         this.finished=false;
         this.running=false;
         this.steps=0;
+        this.path=[];
         if(this.loop) clearTimeout(this.loop);
         this.openSet.clear();
         this.closedSet.clear();
@@ -55,7 +56,7 @@ export class Pathfinder{
 
     setEnd(x,y){
         this.end=this.field[y][x];
-        this.end.draw=4;
+        this.end.draw=3;
     }
 
     setStartNode(node){
@@ -67,7 +68,7 @@ export class Pathfinder{
 
     setEndNode(node){
         this.end=node;
-        this.end.draw=4;
+        this.end.draw=3;
     }
 
 
@@ -99,7 +100,7 @@ export class Pathfinder{
 
         this.loop=setInterval(()=>{
             this.step();
-        }, 30)
+        }, 10)
         
     }
 
@@ -143,7 +144,12 @@ export class Pathfinder{
     drawPath(){
         this.loop=setInterval(()=>{
             if(!this.current.cameFrom){
+                this.path.unshift(this.current);
+                this.current.draw=1;
+                this.drawField();
+
                 this.running=false;
+                console.log(this.path)
                 return clearTimeout(this.loop);
             } 
             this.path.unshift(this.current);
@@ -166,7 +172,7 @@ export class Pathfinder{
     
     updateSets(){
         if(this.current===this.end){
-            console.log(this.current, this.end, this.field)
+            //console.log(this.current, this.end, this.field)
             // stop looping when done
             clearTimeout(this.loop); 
             this.current.draw=3
@@ -187,30 +193,32 @@ export class Pathfinder{
         for(let i=0; i<this.current.neighbors.length; i++){
 
             if(!this.closedSet.has(this.current.neighbors[i])){ 
-                //this.current.neighbors[i].g=this.current.g+1;
-                let tempG=this.current.g+1;
-                if(this.openSet.has(this.current.neighbors[i])){
-                    if(tempG<this.current.neighbors[i].g){
-                        this.current.neighbors[i].g=tempG;
-                    } 
-                }else{ 
-                    this.current.neighbors[i].g=tempG;
+
+                let tempG=this.current.g+this.checkDia(this.current, this.current.neighbors[i]);
+                if(!this.openSet.has(this.current.neighbors[i])){
                     this.openSet.add(this.current.neighbors[i]);
-                    this.current.neighbors[i].draw=1;
-                }
+                    
+                }else if(tempG>=this.current.neighbors[i].g){
+                    continue;
+                } 
+                
+                this.current.neighbors[i].g=tempG;
 
                 this.current.neighbors[i].cameFrom=this.current;
 
 
-                this.current.neighbors[i].h=this.setHeuristic(this.current.neighbors[i]);
+                this.current.neighbors[i].h=this.setHeuristic(this.current.neighbors[i], this.end);
+                console.log(this.current.neighbors[i].h)
                 this.current.neighbors[i].f=this.current.neighbors[i].h+this.current.neighbors[i].g;
             }
         }
     }
 
     /* just the distance for now */
-    setHeuristic=(node)=> Math.hypot(this.end.x-node.x, this.end.y-node.y);
+    setHeuristic=(from, to)=> Math.hypot(to.x-from.x, to.y-from.y);
 
+    /* stupid but fast as long as standart distance stays 1 :) */
+    checkDia=(from, to)=>(from.x-to.x && from.y-to.y)? 1.414 : 1; 
 
     // old using and updating findValidPaths for now
     findNeighbors(){
@@ -227,10 +235,39 @@ export class Pathfinder{
     findValidPaths(){
         for(let y=0; y<this.fieldHeight; y++){
             for(let x=0; x<this.fieldWidth; x++){
-                if(y>0 && !this.field[y-1][x].blocked) this.field[y][x].neighbors.push(this.field[y-1][x]);
-                if(x<this.fieldWidth-1 && !this.field[y][x+1].blocked) this.field[y][x].neighbors.push(this.field[y][x+1]);
-                if(y<this.fieldHeight-1 && !this.field[y+1][x].blocked) this.field[y][x].neighbors.push(this.field[y+1][x]);
-                if(x>0 && !this.field[y][x-1].blocked) this.field[y][x].neighbors.push(this.field[y][x-1]);
+                
+                if(y>0 && !this.field[y-1][x].blocked){
+                    this.field[y][x].neighbors.push(this.field[y-1][x]); // top
+                }
+
+                if(y>0 && x<this.fieldWidth-1 && !this.field[y-1][x+1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y-1][x+1]); // top right
+                }
+                
+                if(x<this.fieldWidth-1 && !this.field[y][x+1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y][x+1]); // right
+                } 
+                
+                if(y<this.fieldHeight-1 && x<this.fieldWidth-1 && !this.field[y+1][x+1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y+1][x+1]); // bottom right
+                }
+
+                if(y<this.fieldHeight-1 && !this.field[y+1][x].blocked){
+                    this.field[y][x].neighbors.push(this.field[y+1][x]); // bottom
+                } 
+
+                if(y<this.fieldHeight-1 && x>0 && !this.field[y+1][x-1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y+1][x-1]); // bottom left
+                }
+                
+                if(x>0 && !this.field[y][x-1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y][x-1]); // left
+                } 
+
+                if(y>0 && x>0 && !this.field[y-1][x-1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y-1][x-1]); // top left
+                } 
+
             }
         }
     }
@@ -269,6 +306,8 @@ class Node{
 
 
 }
+
+
 
 export class PathfinderCanvas{
     field; // actual 2d grid
@@ -482,26 +521,39 @@ export class PathfinderCanvas{
     findValidPaths(){
         for(let y=0; y<this.fieldHeight; y++){
             for(let x=0; x<this.fieldWidth; x++){
+                
                 if(y>0 && !this.field[y-1][x].blocked){
-                    this.field[y][x].neighbors.push(this.field[y-1][x]);
-                    if(x<this.fieldWidth-1 && !this.field[y][x+1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y-1][x]); // top
+                }
 
-                    }
-                    if(x>0 && !this.field[y][x-1].blocked){
-
-                    }
+                if(y>0 && x<this.fieldWidth-1 && !this.field[y-1][x+1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y-1][x+1]); // top right
+                }
+                
+                if(x<this.fieldWidth-1 && !this.field[y][x+1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y][x+1]); // right
                 } 
-                if(x<this.fieldWidth-1 && !this.field[y][x+1].blocked) this.field[y][x].neighbors.push(this.field[y][x+1]);
+                
+                if(y<this.fieldHeight-1 && x<this.fieldWidth-1 && !this.field[y+1][x+1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y+1][x+1]); // bottom right
+                }
+
                 if(y<this.fieldHeight-1 && !this.field[y+1][x].blocked){
-                    this.field[y][x].neighbors.push(this.field[y+1][x]);
-                    if(x<this.fieldWidth-1 && !this.field[y][x+1].blocked){
-
-                    }
-                    if(x>0 && !this.field[y][x-1].blocked){
-
-                    }
+                    this.field[y][x].neighbors.push(this.field[y+1][x]); // bottom
                 } 
-                if(x>0 && !this.field[y][x-1].blocked) this.field[y][x].neighbors.push(this.field[y][x-1]);
+
+                if(y<this.fieldHeight-1 && x>0 && !this.field[y+1][x-1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y+1][x-1]); // bottom left
+                }
+                
+                if(x>0 && !this.field[y][x-1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y][x-1]); // left
+                } 
+
+                if(y>0 && x>0 && !this.field[y-1][x-1].blocked){
+                    this.field[y][x].neighbors.push(this.field[y-1][x-1]); // top left
+                } 
+
             }
         }
     }

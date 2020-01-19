@@ -16,6 +16,7 @@
   position: absolute;
   box-sizing: border-box;
   border-color: rebeccapurple;
+  border-radius: 1rem;
   border-style: solid;
   border-width: 0.1rem;
 }
