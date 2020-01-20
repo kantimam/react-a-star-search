@@ -9,7 +9,7 @@ const UiContainer = ({finder, reset, uiMode}) => {
     return (
         <div id="uiContainer" className="fancyShadow">
             <h1 className="fancyShadow infoHeader">{uiMode}</h1>
-            <button className="fancyShadow" onClick={() => finder.findRandomPath()}>random path</button>
+            <button className={`fancyShadow`} onClick={() => finder.findRandomPath()}>random path</button>
             <button className="fancyShadow" onClick={() => finder.runStep()}>STEP</button>
             <button className="fancyShadow" onClick={() => finder.run()}>START</button>
             <button className="fancyShadow active" onClick={reset}>RESET</button>
