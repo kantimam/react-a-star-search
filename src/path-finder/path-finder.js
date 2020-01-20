@@ -87,9 +87,11 @@ export class Pathfinder{
 
 
     findRandomPath(){
-        this.randomStart();
-        this.randomEnd();
-        this.run();
+        if(!this.finished && !this.running){
+            this.randomStart();
+            this.randomEnd();
+            this.run();
+        } 
     }
 
     findFromTo(startNode, endNode){
