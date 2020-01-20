@@ -49,7 +49,7 @@ export default class FieldClass extends Component {
                 const cellSize = this.fieldRef.current.clientHeight / this.field[0].length;
                 this.setState({ width: cellSize, height: cellSize, uiMode: "set start" });
             }
-            this.finder.init(this.field, (data) => this.setState({ field: data }));
+            this.finder.init(this.field, (data) => this.setState({ field: data }), (data) => this.setState({ uiMode: data }));
 
             cancelAnimationFrame(this.callAfterCss);
         }
@@ -60,13 +60,11 @@ export default class FieldClass extends Component {
         if (this.finder && this.finder.finished) return console.log("already finished. reset and start again")
         if (this.finder && this.finder.running) return console.log("currently running. reset and start again")
 
-        if (this.state.uiMode === "set start") {
-            this.finder.setStartNode(node);
-            return this.setState({ uiMode: "set end" });
+        if (this.state.uiMode === "SET START") {
+            return this.finder.setStartNode(node);
         }
-        if (this.state.uiMode === "set end") {
-            this.finder.setEndNode(node);
-            return this.setState({ uiMode: "set blocked" })
+        if (this.state.uiMode === "SET END") {
+            return this.finder.setEndNode(node);
         }
 
     }
@@ -76,7 +74,7 @@ export default class FieldClass extends Component {
         if (this.finder && this.finder.finished) return console.log("already finished. reset and start again")
         if (this.finder && this.finder.running) return console.log("currently running. reset and start again")
 
-        if (this.state.uiMode === "set blocked") {
+        if (this.state.uiMode === "SET BLOCKED") {
             if (node === this.finder.start || node === this.finder.end) return
             node.draw = 5;
             node.blocked = true;
@@ -87,7 +85,11 @@ export default class FieldClass extends Component {
     render() {
         return (
             <>  
-                <UiContainer finder={this.finder} reset={this.reset} uiMode={this.state.uiMode}/>
+                <UiContainer 
+                    finder={this.finder} 
+                    reset={this.reset}
+                    uiMode={this.state.uiMode}
+                />
                 <div className="fieldContainer fancyShadow">
                     <div style={{height: `${this.state.height*this.props.col}px`}} ref={this.fieldRef} className="field">
                         {this.state.field.map((item) =>

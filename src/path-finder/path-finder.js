@@ -5,6 +5,7 @@ export class Pathfinder{
     fieldWidth;
     fieldHeight;
     drawFunction;  // function to draw the field setState in this case
+    uiFunction=()=>console.log("no function to update react ui set")
     fieldFlat; // 1dim version of the grid for easier looping and drawing
     openSet=new Set();
     closedSet=new Set();
@@ -22,9 +23,10 @@ export class Pathfinder{
 
     
     // move here from constructor
-    init(field, drawFunction){
+    init(field, drawFunction, uiFunction){
         this.field=field;
         this.drawFunction=drawFunction;
+        if(uiFunction) this.uiFunction=uiFunction;
         this.fieldWidth=this.field[0].length;
         this.fieldHeight=this.field.length;
         this.reset();
@@ -44,6 +46,7 @@ export class Pathfinder{
         this.end=null;
         this.fieldFlat=this.field.flat(1);
         this.drawField();
+        this.uiFunction("SET START");
     }
 
    
@@ -54,11 +57,16 @@ export class Pathfinder{
         this.start.draw=1;
         this.openSet.add(this.start);
 
+        this.uiFunction("SET END");
+
     }
 
     setEnd(x,y){
         this.end=this.field[y][x];
         this.end.draw=3;
+
+        this.uiFunction("SET BLOCKED");
+
     }
 
     setStartNode(node){
@@ -66,11 +74,15 @@ export class Pathfinder{
         this.start.draw=1;
         this.openSet.add(this.start);
 
+        this.uiFunction("SET END");
+
     }
 
     setEndNode(node){
         this.end=node;
         this.end.draw=3;
+
+        this.uiFunction("SET BLOCKED");
     }
 
 
@@ -89,14 +101,18 @@ export class Pathfinder{
 
     run(){
         /* dont allow to restart while still running */
-        if(this.finished || this.running) return console.log("reset before starting a new finder");
-
+        if(this.finished || this.running){
+            this.uiFunction("RESET FIRST") 
+            return console.log("reset before starting a new finder");
+        }
         if(!this.field.length || !this.drawFunction) return console.log("seems like init failed");
         if(!this.start) return console.log("please set a start node. setStart(x,y)");
         if(!this.end) return console.log("please set a end node. setEnd(x,y)");
         
         this.drawField();
         this.findValidPaths();
+
+        this.uiFunction("RUNNING");
 
         this.running=true;
 
@@ -108,7 +124,10 @@ export class Pathfinder{
 
 
     runStep(){
-        if(this.finished || this.running) return console.log("reset before starting a new finder");
+        if(this.finished || this.running){ 
+            this.uiFunction("RESET FIRST") 
+            return console.log("reset before starting a new finder")
+        }
 
         // if its the first step prepare nodes
         if(!this.steps){
@@ -118,6 +137,8 @@ export class Pathfinder{
             
             this.drawField();
             this.findValidPaths();
+            
+            this.uiFunction("CLICK STEP OR RUN");
         }
         this.step();
         
@@ -135,6 +156,7 @@ export class Pathfinder{
             clearInterval(this.loop);
             this.finished=true;
             this.running=false;
+            this.uiFunction("COULD NOT BE SOLVED");
             console.log("could not be solved! :(")
         }
     }
@@ -196,12 +218,12 @@ export class Pathfinder{
     
     updateSets(){
         if(this.current===this.end){
-            //console.log(this.current, this.end, this.field)
             // stop looping when done
             clearTimeout(this.loop); 
             this.current.draw=3
             console.log("solved! :3")
             this.finished=true;
+            this.uiFunction("SOLVED! :)")
             return this.drawPath();
         };
         this.openSet.delete(this.current);
