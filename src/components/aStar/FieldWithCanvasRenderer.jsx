@@ -4,6 +4,15 @@ import {PathfinderCanvas as Pathfinder} from '../../path-finder/path-finder.js';
 import Node from '../Node';
 
 
+
+
+/* 
+    maybe only use divs for selecting blocks and do the rendering on canvas element
+*/
+
+
+
+
 export default class FieldClass extends Component {
     constructor(props) {
         super(props)
@@ -102,9 +111,6 @@ export default class FieldClass extends Component {
                     key={"key"+item.x+"_"+item.y+"_"+item.draw}
                     width={this.state.width}
                     height={this.state.height}
-                    /* x={item.x}
-                    y={item.y}
-                    color={colors[item.draw]} */
                     item={item}
                     nodeOnClick={this.nodeOnClick}
                     createWall={this.createWall}

@@ -1,14 +1,45 @@
+:root {
+  --me-color: hsl(350,50%,50%);
+}
+
+
+html, body{
+  height: 100%;
+}
+
+#root{
+  background-color: rgb(242, 242, 242);
+  height: 100%;
+}
+
 .App {
+  padding-top: 2rem;
   text-align: center;
   width: 50rem;
-  height: 50rem;
+  /* height: 50rem; */
   margin: 0 auto;
+}
+
+
+
+.fieldContainer{
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.4rem;
 }
 
 .field{
   position: relative;
-  height: 100%;
   width: 100%;
+  
+}
+
+#renderCanvas{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 
@@ -21,3 +52,30 @@
   border-width: 0.1rem;
 }
 
+#uiContainer{
+  margin: 1rem 0;
+  width: 100%;
+  background-color: rgb(242, 242, 242);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.infoHeader{
+  width: 20rem;
+  margin: 0.4rem auto 2rem;
+  padding: 1rem;
+}
+
+#uiContainer>button{
+  padding: 0.6rem 1rem;
+  margin: 0 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-weight: bold;
+  /* background-color: rgba(220, 50, 240, 1); */
+}
+
+.fancyShadow{
+  border-radius: 0.6rem;
+  box-shadow: 0.4rem 0.2rem 0.5rem rgba(220,220,220, 1), -0.4rem -0.2rem 0.8rem rgba(255,255,255,1), 1rem 1rem 1rem rgba(255,255,255,0.25) inset;
+}

@@ -1,10 +1,33 @@
 import {randomInt} from '../util/util'
 
-export class Pathfinder{
+
+class Node{
+    neighbors=[];
+    cameFrom;
+    f=0;
+    g=0;
+    h=0;
+
+    draw=0;
+    blocked=false;
+    constructor(x, y, size){
+        this.x=x;
+        this.y=y;
+        this.size=size;
+    }
+
+
+}
+
+
+
+export class PathfinderCanvas{
+    /* version that renders path inside canvas for performance not working on that yet tho */
+
     field; // actual 2d grid
     fieldWidth;
     fieldHeight;
-    drawFunction;  // function to draw the field setState in this case
+    drawFunction;  // context of canvas to draw in
     fieldFlat; // 1dim version of the grid for easier looping and drawing
     openSet=new Set();
     closedSet=new Set();
@@ -22,9 +45,9 @@ export class Pathfinder{
 
     
     // move here from constructor
-    init(field, drawFunction){
+    init(field, canvasContext){
         this.field=field;
-        this.drawFunction=drawFunction;
+        this.canvasContext=canvasContext;
         this.fieldWidth=this.field[0].length;
         this.fieldHeight=this.field.length;
         this.reset();
@@ -35,13 +58,10 @@ export class Pathfinder{
         this.finished=false;
         this.running=false;
         this.steps=0;
-        this.path=[];
         if(this.loop) clearTimeout(this.loop);
         this.openSet.clear();
         this.closedSet.clear();
         this.fillField();
-        this.start=null;
-        this.end=null;
         this.fieldFlat=this.field.flat(1);
         this.drawField();
     }
@@ -58,7 +78,7 @@ export class Pathfinder{
 
     setEnd(x,y){
         this.end=this.field[y][x];
-        this.end.draw=3;
+        this.end.draw=4;
     }
 
     setStartNode(node){
@@ -70,7 +90,7 @@ export class Pathfinder{
 
     setEndNode(node){
         this.end=node;
-        this.end.draw=3;
+        this.end.draw=4;
     }
 
 
@@ -91,7 +111,7 @@ export class Pathfinder{
         /* dont allow to restart while still running */
         if(this.finished || this.running) return console.log("reset before starting a new finder");
 
-        if(!this.field.length || !this.drawFunction) return console.log("seems like init failed");
+        if(!this.field.length || !this.canvasContext) return console.log("seems like init failed");
         if(!this.start) return console.log("please set a start node. setStart(x,y)");
         if(!this.end) return console.log("please set a end node. setEnd(x,y)");
         
@@ -102,17 +122,16 @@ export class Pathfinder{
 
         this.loop=setInterval(()=>{
             this.step();
-        }, 10)
+        }, 30)
         
     }
-
 
     runStep(){
         if(this.finished || this.running) return console.log("reset before starting a new finder");
 
         // if its the first step prepare nodes
         if(!this.steps){
-            if(!this.field.length || !this.drawFunction) return console.log("seems like init failed");
+            if(!this.field.length || !this.canvasContext) return console.log("seems like init failed");
             if(!this.start) return console.log("please set a start node. setStart(x,y)");
             if(!this.end) return console.log("please set a end node. setEnd(x,y)");
             
@@ -128,7 +147,6 @@ export class Pathfinder{
             this.findLowestFScore();
             this.updateSets();
             this.checkNeigbors();
-            //this.drawPath();
             this.drawField();
             this.steps++;
         }else{ 
@@ -140,19 +158,13 @@ export class Pathfinder{
     }
 
     drawField(){
-        // looks like drawing with this many divs takes ages :( maybe move to webgl canvas 
-        this.drawFunction([...this.fieldFlat]);
+        //this.drawFunction([...this.fieldFlat]);
     }
 
-    /* drawPath(){
+    drawPath(){
         this.loop=setInterval(()=>{
             if(!this.current.cameFrom){
-                this.path.unshift(this.current);
-                this.current.draw=1;
-                this.drawField();
-
                 this.running=false;
-                console.log(this.path)
                 return clearTimeout(this.loop);
             } 
             this.path.unshift(this.current);
@@ -160,28 +172,7 @@ export class Pathfinder{
             this.current.draw=4;
             this.drawField();
         }, 100);
-    } */
-
-    createPath(){
-        const path=[]
-        let lastNode=this.current;
-        while(lastNode.cameFrom){
-            path.push(lastNode)
-            lastNode=lastNode.cameFrom;
-        }
-        return path;
     }
-
-    drawPath(){
-      const currentPath=this.createPath();
-      for(let i=0; i<currentPath.length; i++){
-        currentPath[i].draw=4;
-      }
-      this.start.draw=1;
-      this.end.draw=3;
-    }
-
-    
 
 
 
@@ -196,7 +187,7 @@ export class Pathfinder{
     
     updateSets(){
         if(this.current===this.end){
-            //console.log(this.current, this.end, this.field)
+            console.log(this.current, this.end, this.field)
             // stop looping when done
             clearTimeout(this.loop); 
             this.current.draw=3
@@ -208,7 +199,6 @@ export class Pathfinder{
         this.closedSet.add(this.current);
 
         this.current.draw=2;
-        
     }
 
     
@@ -218,15 +208,17 @@ export class Pathfinder{
         for(let i=0; i<this.current.neighbors.length; i++){
 
             if(!this.closedSet.has(this.current.neighbors[i])){ 
-
-                let tempG=this.current.g+this.checkDia(this.current, this.current.neighbors[i]);
-                if(!this.openSet.has(this.current.neighbors[i])){
+                //this.current.neighbors[i].g=this.current.g+1;
+                let tempG=this.current.g+this.setHeuristic(this.current, this.current.neighbors[i]);
+                if(this.openSet.has(this.current.neighbors[i])){
+                    if(tempG<this.current.neighbors[i].g){
+                        this.current.neighbors[i].g=tempG;
+                    } 
+                }else{ 
+                    this.current.neighbors[i].g=tempG;
                     this.openSet.add(this.current.neighbors[i]);
-                }else if(tempG>=this.current.neighbors[i].g){
-                    continue;
-                } 
-                
-                this.current.neighbors[i].g=tempG;
+                    this.current.neighbors[i].draw=1;
+                }
 
                 this.current.neighbors[i].cameFrom=this.current;
 
@@ -237,23 +229,8 @@ export class Pathfinder{
         }
     }
 
-    /* just the distance for now */
+    /* just the distance from node to node*/
     setHeuristic=(from, to)=> Math.hypot(to.x-from.x, to.y-from.y);
-
-    /* stupid but fast as long as standart distance stays 1 :) */
-    checkDia=(from, to)=>(from.x-to.x && from.y-to.y)? 1.414 : 1; 
-
-    // old using and updating findValidPaths for now
-    findNeighbors(){
-        for(let y=0; y<this.fieldHeight; y++){
-            for(let x=0; x<this.fieldWidth; x++){
-                y>0 && this.field[y][x].neighbors.push(this.field[y-1][x]);
-                x<this.fieldWidth-1 && this.field[y][x].neighbors.push(this.field[y][x+1]);
-                y<this.fieldHeight-1 && this.field[y][x].neighbors.push(this.field[y+1][x]);
-                x>0 && this.field[y][x].neighbors.push(this.field[y][x-1]);
-            }
-        }
-    }
 
     findValidPaths(){
         for(let y=0; y<this.fieldHeight; y++){
@@ -311,24 +288,3 @@ export class Pathfinder{
         }
     }
 }
-
-class Node{
-    neighbors=[];
-    cameFrom;
-    f=0;
-    g=0;
-    h=0;
-
-    draw=0;
-    blocked=false;
-    constructor(x, y, size){
-        this.x=x;
-        this.y=y;
-        this.size=size;
-    }
-
-
-}
-
-
-export default Pathfinder;
