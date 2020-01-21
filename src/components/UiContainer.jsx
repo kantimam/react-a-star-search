@@ -1,4 +1,5 @@
 import React, {useState} from 'react'
+import Gear from './icons/gear'
 
 const UiContainer = ({finder, reset, uiMode, updateDim}) => {
     const [settings, toggleSettings]=useState(false);
@@ -42,7 +43,9 @@ const UiContainer = ({finder, reset, uiMode, updateDim}) => {
                     <button onClick={done} id="settingsButton" className="fancyShadow">UPDATE</button>
                 </>:
                 <>
-                    <div onClick={()=>toggleSettings(true)} className="toggleSettings fancyShadow">X</div>
+                    <div onClick={()=>toggleSettings(true)} className="toggleSettings fancyShadow">
+                        <Gear/>
+                    </div>
                     <h1 className="fancyShadow infoHeader">{uiMode}</h1>
                     <button className={`fancyShadow`} onClick={() => finder.findRandomPath()}>random path</button>
                     <button className="fancyShadow" onClick={() => finder.runStep()}>STEP</button>
