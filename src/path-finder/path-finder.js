@@ -1,4 +1,4 @@
-import {randomInt} from '../util/util'
+import {randomInt, create2dArray} from '../util/util'
 
 export class Pathfinder{
     field; // actual 2d grid
@@ -24,14 +24,18 @@ export class Pathfinder{
 
     
     // move here from constructor
-    init(field, drawFunction, uiFunction){
-        this.field=field;
+    init(col, row, drawFunction, uiFunction){
         this.drawFunction=drawFunction;
         if(uiFunction) this.uiFunction=uiFunction;
+        this.setSize(col, row)
+    }
+
+    setSize(col, row){
+        console.log(col, row)
+        this.field=create2dArray(Number(col), Number(row));
         this.fieldWidth=this.field[0].length;
         this.fieldHeight=this.field.length;
         this.reset();
-
     }
 
     reset(){
@@ -169,23 +173,6 @@ export class Pathfinder{
         this.drawFunction([...this.fieldFlat]);
     }
 
-    /* drawPath(){
-        this.loop=setInterval(()=>{
-            if(!this.current.cameFrom){
-                this.path.unshift(this.current);
-                this.current.draw=1;
-                this.drawField();
-
-                this.running=false;
-                console.log(this.path)
-                return clearTimeout(this.loop);
-            } 
-            this.path.unshift(this.current);
-            this.current=this.current.cameFrom;
-            this.current.draw=4;
-            this.drawField();
-        }, 100);
-    } */
 
     createPath(){
         const path=[]

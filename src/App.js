@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import Field from './components/FieldClass';
+import AStar from './components/AStar';
 //import Field from './components/aStar/FieldWithCanvasRenderer';
 
 
@@ -10,7 +10,7 @@ function App() {
   
   return (
     <div className="App">
-      <Field  col={22} row={18} />
+      <AStar col={22} row={18} frameRate={20}/>
     </div>
   );
 }

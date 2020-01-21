@@ -1,80 +1,47 @@
-import React, {memo, useRef, useLayoutEffect, useState} from 'react'
-import {create2dArray} from '../util/util';
-import {Pathfinder} from '../path-finder/path-finder.js';
+import React, {memo, useLayoutEffect, useEffect, useRef, useState} from 'react'
 import Node from './Node';
 
-const finder=new Pathfinder();
 
-const Field = () => {
+const Field = ({field, row, col, createWall, nodeOnClick}) => {
     const fieldRef=useRef(null);
     const [width, setWidth]=useState(0);
-    const [height, setHeight]=useState(0);
-    const [field, setField]=useState([]);
-    
-    const [uiMode, setUiMode]=useState("set start");
 
-    const nodeOnClick=(node)=>{
-        if(uiMode==="set start"){
-            finder.setStartNode(node);
-            return setUiMode("set end");
+    const resize=()=>{
+        if (fieldRef.current.clientWidth > 0) {
+            const cellSize = fieldRef.current.clientWidth / col;
+            setWidth(cellSize);
         }
-        if(uiMode==="set end"){
-            finder.setEndNode(node);
-            return setUiMode("set blocked");
-        }
-        if(uiMode==="set blocked"){
-            if(node===finder.start || node===finder.end) return
-            node.draw=5;
-            node.blocked=true;
-        }
-        
     }
 
     useLayoutEffect(() => {
-        const field=create2dArray(22, 22);
-        if(fieldRef.current && field.length){
-            /* make the cells square */
-            if(fieldRef.current.clientWidth>0){
-                const cellSize=fieldRef.current.clientWidth / field[0].length;
-                setWidth(cellSize);
-                setHeight(cellSize); 
-            }else if(fieldRef.current.clientHeight>0){
-                const cellSize=fieldRef.current.clientHeight / field[0].length;
-                setWidth(cellSize);
-                setHeight(cellSize);
-            }
-            finder.init(field, setField);
-            
+        resize();
+        
+    }, [field, row, col, createWall, nodeOnClick])
 
-        }
+    useEffect(() => {
+        window.addEventListener("resize", resize);
+        return () => {
+            window.removeEventListener("resize", resize);
+        };
     }, [])
 
 
+
     return (
-        <>
-            {finder && 
-                <>  <p>{uiMode}</p>
-                    <button onClick={()=>finder.findRandomPath()}>random path</button>
-                    <button onClick={()=>finder.run()}>START</button>
-                    <button onClick={()=>finder.runStep()}>STEP</button>
-                </>
-            }
-            <div ref={fieldRef}  className="field">
-            {field.map((item)=>
+        <div className="fieldContainer fancyShadow">
+        <div style={{height: `${width*row}px`}} ref={fieldRef} className="field">
+            {width && field.map((item) =>
                 <Node
-                    key={"key"+item.x+"_"+item.y+"_"+item.draw}
+                    key={"key" + item.x + "_" + item.y + "_" + item.draw}
                     width={width}
-                    height={height}
-                    /* x={item.x}
-                    y={item.y}
-                    color={colors[item.draw]} */
+                    height={width}
                     item={item}
                     nodeOnClick={nodeOnClick}
+                    createWall={createWall}
                 />
             )}
-            </div>
-        </>        
-        
+        </div>
+    </div>
     )
 }
 

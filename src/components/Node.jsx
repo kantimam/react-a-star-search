@@ -8,6 +8,7 @@ const Node = ({width, height, item, nodeOnClick, createWall}) => {
     const setNode=()=>{
         /* set start and end node */
         nodeOnClick(item);
+        createWall(item);
         setColor(colors[item.draw]);
     }
     const blockPath=(event)=>{
