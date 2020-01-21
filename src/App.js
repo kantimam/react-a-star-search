@@ -10,7 +10,7 @@ function App() {
   
   return (
     <div className="App">
-      <Field  row={24} col={24}/>
+      <Field  col={22} row={18} />
     </div>
   );
 }

@@ -13,6 +13,7 @@
   padding: 2rem 0;
   text-align: center;
   width: 50rem;
+  max-width: 94%;
   /* height: 50rem; */
   margin: 0 auto;
 }

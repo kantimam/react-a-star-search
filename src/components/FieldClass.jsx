@@ -17,6 +17,7 @@ export default class FieldClass extends Component {
         this.callAfterCss = this.callAfterCss.bind(this);
         this.nodeOnClick = this.nodeOnClick.bind(this);
         this.createWall = this.createWall.bind(this);
+        this.setSize=this.setSize.bind(this);
         this.reset = this.reset.bind(this);
         this.waitForCss = null;
 
@@ -35,23 +36,31 @@ export default class FieldClass extends Component {
     }
 
     componentDidMount() {
+        this.finder.init(this.field, (data) => this.setState({ field: data }), (data) => this.setState({ uiMode: data }));
+        window.addEventListener("resize", this.setSize)
         this.waitForCss = requestAnimationFrame(this.callAfterCss);
+    }
+
+    componentWillUnmount(){
+        window.removeEventListener("resize", this.setSize)
     }
 
     callAfterCss() {
         /* componentdidmount fires before dom actually painted anything so wait for first real paint to measure the container */
         if (this.fieldRef.current && this.field.length && this.waitForCss) {
             /* make the cells square */
-            if (this.fieldRef.current.clientWidth > 0) {
-                const cellSize = this.fieldRef.current.clientWidth / this.field[0].length;
-                this.setState({ width: cellSize, height: cellSize, uiMode: "set start" });
-            } else if (this.fieldRef.current.clientHeight > 0) {
-                const cellSize = this.fieldRef.current.clientHeight / this.field[0].length;
-                this.setState({ width: cellSize, height: cellSize, uiMode: "set start" });
-            }
-            this.finder.init(this.field, (data) => this.setState({ field: data }), (data) => this.setState({ uiMode: data }));
-
+            this.setSize();
             cancelAnimationFrame(this.callAfterCss);
+        }
+    }
+
+    setSize(){
+        if (this.fieldRef.current.clientWidth > 0) {
+            const cellSize = this.fieldRef.current.clientWidth / this.field[0].length;
+            this.setState({ width: cellSize, height: cellSize, uiMode: "set start" });
+        } else if (this.fieldRef.current.clientHeight > 0) {
+            const cellSize = this.fieldRef.current.clientHeight / this.field[0].length;
+            this.setState({ width: cellSize, height: cellSize, uiMode: "set start" });
         }
     }
 
@@ -91,7 +100,7 @@ export default class FieldClass extends Component {
                     uiMode={this.state.uiMode}
                 />
                 <div className="fieldContainer fancyShadow">
-                    <div style={{height: `${this.state.height*this.props.col}px`}} ref={this.fieldRef} className="field">
+                    <div style={{height: `${this.state.height*this.props.row}px`}} ref={this.fieldRef} className="field">
                         {this.state.field.map((item) =>
                             <Node
                                 key={"key" + item.x + "_" + item.y + "_" + item.draw}

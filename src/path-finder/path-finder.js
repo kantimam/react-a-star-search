@@ -7,9 +7,10 @@ export class Pathfinder{
     drawFunction;  // function to draw the field setState in this case
     uiFunction=()=>console.log("no function to update react ui set")
     fieldFlat; // 1dim version of the grid for easier looping and drawing
+    frameRate=10;
+
     openSet=new Set();
     closedSet=new Set();
-    
     start;
     end;
     current;
@@ -120,7 +121,7 @@ export class Pathfinder{
 
         this.loop=setInterval(()=>{
             this.step();
-        }, 10)
+        }, 1000/this.frameRate)
         
     }
 
